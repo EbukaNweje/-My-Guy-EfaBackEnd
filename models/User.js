@@ -7,18 +7,7 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
 
-  userName: {
-    type: String,
-    required: true,
-  },
-
   email: {
-    type: String,
-    required: true,
-    unique: true, 
-  },
-
-  reTypeEmail: {
     type: String,
     required: true,
     unique: true, 
@@ -28,26 +17,27 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  confirmPassword: {
+
+  phoneNumber: {
     type: String,
     required: true,
   },
 
-  // gender: {
-  //   type: String,
-  //   required: true,
-  // },
+  gender: {
+    type: String,
+    required: true,
+  },
 
-  // country: {
-  //   type: String,
-  //   required: true,
-  // },
+  country: {
+    type: String,
+    required: true,
+  },
 
-  // address: {
-  //   type: String,
-  //   required: true,
+  address: {
+    type: String,
+    required: true,
 
-  // },
+  },
 
   howdoyouhearabout: {
     type: String,

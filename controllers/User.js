@@ -324,8 +324,8 @@ exports.updateTotalEarned = async (req,res, next) => {
 
 exports.getUserDeposits = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const user = await User.findById(userId).populate('Transactions.deposits');
+        const { id } = req.params;
+        const user = await User.findById(id).populate('Transactions.deposits');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -342,8 +342,8 @@ exports.getUserDeposits = async (req, res) => {
 
 exports.getUserInvestments = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const user = await User.findById(userId).populate('Transactions.investments');
+        const { id } = req.params;
+        const user = await User.findById(id).populate('Transactions.investments');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -358,31 +358,10 @@ exports.getUserInvestments = async (req, res) => {
     }
 };
 
-
-
-
-
-
-exports.getAllUserInvestments = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Fetch all investments associated with the user and populate the plan information
-        const investments = await investModel.find({ user: id }).populate('plan');
-
-        res.status(200).json({ message: 'Investments retrieved successfully', data: investments });
-    } catch (error) {
-        console.error('Error fetching investments:', error);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-
-
 exports.getUserInterests = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const user = await User.findById(userId).populate('Transactions.interests');
+        const { id } = req.params;
+        const user = await User.findById(id).populate('Transactions.interests');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -399,8 +378,8 @@ exports.getUserInterests = async (req, res) => {
 
 exports.getUserWithdrawals = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const user = await User.findById(userId).populate('Transactions.withdrawals');
+        const { id } = req.params;
+        const user = await User.findById(id).populate('Transactions.withdrawals');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -714,5 +693,91 @@ exports.getAllUserInvestmentPlans = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+
+// exports.transferProfitsToAcct = async (req, res) =>{
+//   try{
+//     const id = req.params.id;
+
+//     const user = await User.findById(id);
+//     if(!user){
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+//     const profit = user.totalProfit
+//     if(profit <= 0){
+//       return res.status(400).json({
+//         message: 'You have 0 profit. Choose a plan and invest to make profit'
+//       })
+//     }
+//     user.accountBalance += parseFloat(profit); 
+//     user.totalProfit -= parseFloat(profit); 
+//     await user.save();
+
+//     res.status(200).json({
+//       message: 'Profits transferred to account',
+//       data: user.accountBalance,
+//     })
+    
+//   }catch(err){
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// }
+
+exports.transferProfitsToAcct = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Find the user by id
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check the user's profit
+    const profit = Number(user.totalProfit);
+    const bonus = Number(user.bonus);
+    if (profit <= 0) {
+      return res.status(200).json({
+        message: 'You have 0 profit. Choose a plan and invest to make profit'
+      });
+    }
+    if (bonus <= 0) {
+      return res.status(200).json({
+        message: 'You have 0 profit. Choose a plan and invest to make profit'
+      });
+    }
+
+    // Transfer the profit to account balance
+    user.accountBalance += profit + bonus;
+    user.totalProfit = 0; 
+    user.bonus = 0; 
+
+    // Save the user with updated values
+    await user.save();
+
+    // Respond with success message
+    res.status(200).json({
+      message: 'Profits and bonus has been added to account balance successfully',
+      data: user.accountBalance,
+    });
+  } catch (err) {
+    console.error('Error transferring profits:', err);
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+};
+
+exports.getAllUserInvestments = async (req, res) => {
+  try {
+      const { id } = req.params;
+
+      // Fetch all investments associated with the user and populate the plan information
+      const investments = await investModel.find({ user: id }).populate('plan');
+
+      res.status(200).json({ message: 'Investments retrieved successfully', data: investments });
+  } catch (error) {
+      console.error('Error fetching investments:', error);
+      res.status(500).json({ error: error.message });
   }
 };
