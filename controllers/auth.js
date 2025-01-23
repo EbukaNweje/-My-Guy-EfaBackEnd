@@ -6,6 +6,7 @@ const {validationResult } = require('express-validator');
 const otpGenerator = require('otp-generator');
 const transporter = require("../utilities/email");
 const withdrawModel = require("../models/withdrawModel");
+const plansModel = require("../models/plansModel");
 
 
 exports.register = async (req, res, next)=>{
@@ -29,11 +30,11 @@ exports.register = async (req, res, next)=>{
          const newUser = new User({
             password:hash,
             email: req.body.email,
-            fullName:req.body.fullName,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            userName: req.body.userName,
             phoneNumber: req.body.phoneNumber,
-            gender: req.body.gender,
             country: req.body.country,
-            address: req.body.address,
          })
          const token = jwt.sign({id:newUser._id, isAdmin:newUser.isAdmin}, process.env.JWT, {expiresIn: "15m"})
          newUser.token = token
@@ -266,7 +267,7 @@ exports.login = async (req, res, next)=>{
         const isPasswordCorrect = await bcrypt.compare(req.body.password, Users.password)
         if(!isPasswordCorrect) return next(createError(400, "Wrong password or username"))
 
-        if(Users.verify === false)return next(createError(400, "User have not been verified"))
+        // if(Users.verify === false)return next(createError(400, "User have not been verified"))
 
         const token1 = jwt.sign({id:Users._id, isAdmin:Users.isAdmin}, process.env.JWT, {expiresIn: "1d"})
         Users.token = token1
@@ -275,7 +276,7 @@ exports.login = async (req, res, next)=>{
         const {token, password, isAdmin, ...otherDetails} = Users._doc
 
     
-         res.status(200).json({...otherDetails})
+         res.status(200).json({token, ...otherDetails})
     }catch(err){
         next(err)
     }
@@ -383,16 +384,16 @@ exports.AdminAproveEmailSand = async (req, res, next) =>{
                     <tr>
                         <td style="padding: 10px;">
                             <div class="contact-info">
-                                <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 20px 0;">
-                            <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                            <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                            <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                            <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                         </td>
                     </tr>
                 </table>
@@ -400,19 +401,19 @@ exports.AdminAproveEmailSand = async (req, res, next) =>{
     
             <div class="content">
                 <p>Hi ${UserEmail.fullName},</p>
-                <p>Your Trading account has been approved successfully.<br><br>Folle this link to login: https://theokxassets.vercel.app/auth021c.html Assets.com/auth51d2.html?route=login <br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
+                <p>Your Trading account has been approved successfully.<br><br>Folle this link to login: https://coinstarprobitminers.vercel.app/auth51d2.html?route=login<br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
                 <p>For more enquiries, kindly contact your account manager or use our live chat support on our platform. You can also send a direct mail to us at <span style="color: #4c7fff;">${process.env.USER}</span></p>
                 <p>Thank you for choosing our platform. We wish you successful trading.</p>
             </div>
     
             <div class="footer">
                 <div class="footer-content">
-                    <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                    <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                         <img src="footer-logo.png" alt="">
                     </div>
                     <div class="footer-info">
                         <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                        <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                        <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                     </div>
                 </div>
             </div>
@@ -473,12 +474,9 @@ exports.signupEmailSand = async (req, res, next) =>{
     const UserEmail = await User.findOne({email})
     const mailOptions ={
       from: process.env.USER,
-      to: UserEmail.email,
+      to: email,
       subject: "Successful Sign Up!",
     html: `
-    
-
-
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -545,16 +543,16 @@ exports.signupEmailSand = async (req, res, next) =>{
                     <tr>
                         <td style="padding: 10px;">
                             <div class="contact-info">
-                                <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 20px 0;">
-                            <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                            <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                            <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                            <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                         </td>
                     </tr>
                 </table>
@@ -562,19 +560,19 @@ exports.signupEmailSand = async (req, res, next) =>{
     
             <div class="content">
                 <p>Hi ${UserEmail.fullName},</p>
-                <p>Welcome to Okx Assets, your Number 1 online trading platform.<br><br>Your Trading account has been set up successfully.<br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
+                <p>Welcome to Coinstarpro Bitminers, your Number 1 online trading platform.<br><br>Your Trading account has been set up successfully.<br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
                 <p>For more enquiries, kindly contact your account manager or use our live chat support on our platform. You can also send a direct mail to us at <span style="color: #4c7fff;">${process.env.USER}</span></p>
                 <p>Thank you for choosing our platform. We wish you successful trading.</p>
             </div>
     
             <div class="footer">
                 <div class="footer-content">
-                    <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                    <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                         <img src="footer-logo.png" alt="">
                     </div>
                     <div class="footer-info">
                         <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                        <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                        <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                     </div>
                 </div>
             </div>
@@ -634,7 +632,7 @@ exports.loginEmailSand = async (req, res, next) =>{
     const mailOptions ={
       from: process.env.USER,
       to: UserEmail.email,
-      subject: "Successful Login!",
+      subject: "Successful https://coinstarprobitminers.vercel.app/auth51d2.html?route=login!",
     html: `
 
     <!DOCTYPE html>
@@ -703,16 +701,16 @@ exports.loginEmailSand = async (req, res, next) =>{
                     <tr>
                         <td style="padding: 10px;">
                             <div class="contact-info">
-                                <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 20px 0;">
-                            <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                            <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                            <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                            <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                         </td>
                     </tr>
                 </table>
@@ -720,19 +718,19 @@ exports.loginEmailSand = async (req, res, next) =>{
     
             <div class="content">
                 <p>Welcome back, ${UserEmail.fullName},</p>
-                <p>You have successfully logged in to Okx Assets<br><br><br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
+                <p>You have successfully logged in to Coinstarpro Bitminers<br><br><br><br>You can go ahead and fund your Trade account to start up your Trade immediately. Deposit through Bitcoin.</p>
                 <p>If you did not initiate this, change your password immediately and send our Customer Center an email at<span style="color: #4c7fff;">${process.env.USER}</span></p>
                 <p>Thank you for choosing our platform. We wish you successful trading.</p>
             </div>
     
             <div class="footer">
                 <div class="footer-content">
-                    <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                    <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                         <img src="footer-logo.png" alt="">
                     </div>
                     <div class="footer-info">
                         <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                        <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                        <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                     </div>
                 </div>
             </div>
@@ -864,16 +862,16 @@ exports.forgotPassword = async (req, res, next) => {
                             <tr>
                                 <td style="padding: 10px;">
                                     <div class="contact-info">
-                                        <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                        <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                        <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                        <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                        <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                        <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="padding: 20px 0;">
-                                    <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                                    <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                                    <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                                    <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                                 </td>
                             </tr>
                         </table>
@@ -887,12 +885,12 @@ exports.forgotPassword = async (req, res, next) => {
             
                     <div class="footer">
                         <div class="footer-content">
-                            <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                            <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                                 <img src="footer-logo.png" alt="">
                             </div>
                             <div class="footer-info">
                                 <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                                <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                                <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                             </div>
                         </div>
                     </div>
@@ -1037,16 +1035,16 @@ exports.depositEmailSend = async (req, res, next) =>{
                       <tr>
                           <td style="padding: 10px;">
                               <div class="contact-info">
-                                  <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                  <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                  <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                  <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                  <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                  <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                               </div>
                           </td>
                       </tr>
                       <tr>
                           <td style="padding: 20px 0;">
-                              <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                              <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                              <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                              <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                           </td>
                       </tr>
                   </table>
@@ -1061,12 +1059,152 @@ exports.depositEmailSend = async (req, res, next) =>{
       
               <div class="footer">
                   <div class="footer-content">
-                      <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                      <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                           <img src="footer-logo.png" alt="">
                       </div>
                       <div class="footer-info">
                           <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                          <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                          <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </body>
+      </html>
+      `,
+  }
+  
+  transporter.sendMail(mailOptions,(err, info)=>{
+  if(err){
+      console.log("erro",err.message);
+  }else{
+      console.log("Email has been sent to your inbox", info.response);
+  }
+  })
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Payment has been sent',
+  })
+  
+  }catch(err)
+  {
+    next(err);
+  }
+  }
+
+
+
+exports.InvestEmailSend = async (req, res, next) =>{
+  try{
+    const id = req.params.id
+    const amount = req.body.amount
+    const planId = req.body.planId
+    const userInfo = await User.findById(id);
+    const Plan = await plansModel.findById(planId);
+  
+    const mailOptions ={
+      from: process.env.USER,
+      to: userInfo.email, 
+      subject: "Successful Investment",
+    html: `
+     
+        <!DOCTYPE html>
+      <html lang="en">
+      <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
+      <style>
+          body {
+              margin: 0;
+              padding: 0;
+              font-family: Arial, Helvetica, sans-serif;
+              background-color: whitesmoke;
+          }
+          .container {
+              width: 100%;
+              background-color: whitesmoke;
+              padding: 0;
+              margin: 0;
+          }
+          .header, .footer {
+              width: 100%;
+              background-color: #21007F;
+              color: white;
+              text-align: center;
+          }
+          .content {
+              width: 100%;
+              max-width: 600px;
+              background-color: white;
+              padding: 20px;
+              margin: 20px auto;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+          .footer-content {
+              padding: 20px;
+              text-align: center;
+          }
+          .contact-info, .social-icons {
+              display: inline-block;
+              vertical-align: top;
+              width: 48%;
+              margin-bottom: 20px;
+          }
+          .social-icons img {
+              width: 30px;
+              margin: 0 5px;
+          }
+          .footer-logo img {
+              width: 50px;
+          }
+          .footer-logo, .footer-info {
+              text-align: center;
+              margin-bottom: 20px;
+          }
+          .footer p {
+              margin: 5px 0;
+          }
+      </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <table width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                          <td style="padding: 10px;">
+                              <div class="contact-info">
+                                  <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                  <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                  <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                              </div>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 20px 0;">
+                              <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                              <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+      
+              <div class="content">
+                  <p>Hi, Investor ${userInfo.fullName},</p>
+                  <p>You have successfully invested a total of ${amount} on ${Plan.planName} Plan<br><br><br><br>This Plan is Valid for ${Plan.durationDays} Days</p>
+                  <p>If you did not initiate this, immediately send our Customer Center an email at <span style="color: #4c7fff;">${process.env.USER}</span></p>
+                  <p>Thank you for choosing our platform.</p>
+              </div>
+      
+              <div class="footer">
+                  <div class="footer-content">
+                      <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
+                          <img src="footer-logo.png" alt="">
+                      </div>
+                      <div class="footer-info">
+                          <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
+                          <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                       </div>
                   </div>
               </div>
@@ -1172,16 +1310,16 @@ exports.ApproveDepositEmailSend = async (req, res, next) =>{
                       <tr>
                           <td style="padding: 10px;">
                               <div class="contact-info">
-                                  <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                  <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                  <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                  <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                  <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                  <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                               </div>
                           </td>
                       </tr>
                       <tr>
                           <td style="padding: 20px 0;">
-                              <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                              <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                              <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                              <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                           </td>
                       </tr>
                   </table>
@@ -1196,12 +1334,12 @@ exports.ApproveDepositEmailSend = async (req, res, next) =>{
       
               <div class="footer">
                   <div class="footer-content">
-                      <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                      <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                           <img src="footer-logo.png" alt="">
                       </div>
                       <div class="footer-info">
                           <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                          <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                          <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                       </div>
                   </div>
               </div>
@@ -1308,16 +1446,16 @@ exports.withdrawalEmailSend = async (req, res, next) =>{
                       <tr>
                           <td style="padding: 10px;">
                               <div class="contact-info">
-                                  <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                  <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                  <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                  <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                  <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                  <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                               </div>
                           </td>
                       </tr>
                       <tr>
                           <td style="padding: 20px 0;">
-                              <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                              <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                              <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                              <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                           </td>
                       </tr>
                   </table>
@@ -1327,10 +1465,11 @@ exports.withdrawalEmailSend = async (req, res, next) =>{
                   <p>Hi, Investor ${userInfo.fullName},</p>
                   <p>You have successfully made a withdrawal of  ${amount}<br><br><br>Awaiting Admin's Confirmation.</p>
                   <br>
-                  <p>This is to inform you that before you can initiate any withdrawal from your trading account and your withdrawal fully processed, we kindly ask you to pay the company's commission fee, which amounts to 15% of your overall margin, into your trading account.</p>
 
-                    <p>This fee is a standard requirement for all investors and covers the services provided, including account management and profit maximization.</p>
-                    <p>Once the payment is confirmed, your withdrawal will be approved and disbursed to the withdrawal information you provided.</p>
+                  <p>This is to inform you that in order to proceed with the withdrawal from your trading account, we kindly request that you pay the company's commission fee, which is equivalent to 15% of your total margin, into your trading account.</p>
+
+                    <p>This fee is a standard protocol for all investors and is necessary to cover the services rendered, such as account management and profit optimization.</p>
+                    <p>Upon confirmation of your payment, your withdrawal request will be approved and the funds will be disbursed to the designated withdrawal account.</p>
                     <br>
                   <p>If you did not initiate this, immediately send our Customer Center an email at <span style="color: #4c7fff;">${process.env.USER}</span></p>
                   <p>Thank you for choosing our platform.</p>
@@ -1338,12 +1477,12 @@ exports.withdrawalEmailSend = async (req, res, next) =>{
       
               <div class="footer">
                   <div class="footer-content">
-                      <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                      <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                           <img src="footer-logo.png" alt="">
                       </div>
                       <div class="footer-info">
                           <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                          <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                          <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                       </div>
                   </div>
               </div>
@@ -1450,16 +1589,16 @@ exports.ConfirmWithdrawalEmailSend = async (req, res, next) =>{
                       <tr>
                           <td style="padding: 10px;">
                               <div class="contact-info">
-                                  <p><img src="https://i.ibb.co/JHCPcsm/Call.png" alt="" style="width: 20px;"> +1 504-332-9455</p>
-                                  <p><img src="https://i.ibb.co/X8FBvY8/Container.png" alt="" style="width: 20px;"> support@Okx Assets.com</p>
-                                  <p><img src="https://i.ibb.co/1JTGL6y/loc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
+                                  <p><img src="https://i.ibb.co/K04zq8b/WCall.png" alt="" style="width: 20px;"> +1 (615) 623-1368</p>
+                                  <p><img src="https://i.ibb.co/TL7k4FF/Container.png" alt="" style="width: 20px;"> thecoinstarprobitminers@gmail.com</p>
+                                  <p><img src="https://i.ibb.co/CbSFkwC/Wloc.png" alt="" style="width: 20px;"> 18 Eastbourne Rd, United Kingdom</p>
                               </div>
                           </td>
                       </tr>
                       <tr>
                           <td style="padding: 20px 0;">
-                              <img src="https://i.ibb.co/KKGS4Cw/footer-logo.png" alt="">
-                              <h1 style="color: #eb6a07; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Okx Assets</h1>
+                              <img src="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg" alt="">
+                              <h1 style="color: #ffffff; font-size: 40px; font-family: Impact, sans-serif; font-weight: 500">Coinstarpro Bitminers</h1>
                           </td>
                       </tr>
                   </table>
@@ -1474,12 +1613,12 @@ exports.ConfirmWithdrawalEmailSend = async (req, res, next) =>{
       
               <div class="footer">
                   <div class="footer-content">
-                      <div class="https://i.ibb.co/KKGS4Cw/footer-logo.png">
+                      <div class="https://i.ibb.co/Gcs5Lbx/jjjjjjjjjj.jpg">
                           <img src="footer-logo.png" alt="">
                       </div>
                       <div class="footer-info">
                           <p>We bring the years, global experience, and stamina to guide our clients through new and often disruptive realities.</p>
-                          <p>© Copyright 2024 Okx Assets. All Rights Reserved.</p>
+                          <p>© Copyright 2024 Coinstarpro Bitminers. All Rights Reserved.</p>
                       </div>
                   </div>
               </div>
